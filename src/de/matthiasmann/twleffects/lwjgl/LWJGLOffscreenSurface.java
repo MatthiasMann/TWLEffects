@@ -33,6 +33,7 @@ import de.matthiasmann.twl.Color;
 import de.matthiasmann.twl.renderer.AnimationState;
 import de.matthiasmann.twl.renderer.Image;
 import de.matthiasmann.twl.renderer.OffscreenSurface;
+import de.matthiasmann.twleffects.GridImage;
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.EXTFramebufferObject.*;
@@ -43,7 +44,7 @@ import static org.lwjgl.opengl.GL12.*;
  *
  * @author Matthias Mann
  */
-public class LWJGLOffscreenSurface implements OffscreenSurface {
+public class LWJGLOffscreenSurface implements OffscreenSurface, GridImage {
     
     private final LWJGLEffectsRenderer renderer;
     
@@ -144,24 +145,69 @@ public class LWJGLOffscreenSurface implements OffscreenSurface {
         draw(Color.WHITE, x, y, w, h);
     }
     
+    public void draw(AnimationState as, float[] xy, int numVerticesX, int numVerticesY) {
+        draw(Color.WHITE, xy, numVerticesX, numVerticesY);
+    }
+    
     void draw(Color color, int x, int y, int w, int h) {
+        if(startRendering(color)) {
+            float tx1 = usedWidth / (float)textureWidth;
+            float ty0 = 0.0f;
+            float ty1 = usedHeight / (float)textureHeight;
+
+            glTexCoord2f(  0, ty1); glVertex2i(x    , y    );
+            glTexCoord2f(  0, ty0); glVertex2i(x    , y + h);
+            glTexCoord2f(tx1, ty0); glVertex2i(x + w, y + h);
+            glTexCoord2f(tx1, ty1); glVertex2i(x + w, y    );
+            endRendering();
+        }
+    }
+    
+    void draw(Color color, float[] xy, int numVerticesX, int numVerticesY) {
+        if(xy == null) {
+            throw new NullPointerException("xy");
+        }
+        if(numVerticesX <= 1 || numVerticesY <= 1) {
+            throw new IllegalArgumentException("numVerticesX/Y");
+        }
+        if(numVerticesX*numVerticesY*2 > xy.length) {
+            throw new IllegalArgumentException("not enough coordinates");
+        }
+        if(startRendering(color)) {
+            float ty0 = usedHeight / (float)textureHeight;
+            for(int r=1 ; r<numVerticesY ; r++) {
+                float ty1 = ty0;
+                ty0 = (usedHeight * (numVerticesY-1-r)) / (float)(textureHeight * (numVerticesY-1));
+                float tx1 = 0.0f;
+                int idx0 = (r-1) * numVerticesX*2;
+                int idx1 = idx0 + numVerticesX*2;
+                for(int c=1 ; c<numVerticesX ; c++,idx0+=2,idx1+=2) {
+                    float tx0 = tx1;
+                    tx1 = (usedWidth * c) / (float)(textureWidth * (numVerticesX-1));
+                    glTexCoord2f(tx0, ty1); glVertex2f(xy[idx0  ], xy[idx0+1]);
+                    glTexCoord2f(tx0, ty0); glVertex2f(xy[idx1  ], xy[idx1+1]);
+                    glTexCoord2f(tx1, ty0); glVertex2f(xy[idx1+2], xy[idx1+3]);
+                    glTexCoord2f(tx1, ty1); glVertex2f(xy[idx0+2], xy[idx0+3]);
+                }
+            }
+            endRendering();
+        }
+    }
+    
+    private boolean startRendering(Color color) {
         checkNotBound();
         if(textureID == 0) {
-            return;
+            return false;
         }
-        float tx1 = usedWidth / (float)textureWidth;
-        float ty0 = 0.0f;
-        float ty1 = usedHeight / (float)textureHeight;
-        
         renderer.setColor(color);
         
         glBindTexture(GL_TEXTURE_2D, textureID);
         glBlendFunc(GL_ONE, GL_SRC_ALPHA);
         glBegin(GL_QUADS);
-        glTexCoord2f(  0, ty1); glVertex2i(x    , y    );
-        glTexCoord2f(  0, ty0); glVertex2i(x    , y + h);
-        glTexCoord2f(tx1, ty0); glVertex2i(x + w, y + h);
-        glTexCoord2f(tx1, ty1); glVertex2i(x + w, y    );
+        return true;
+    }
+    
+    private void endRendering() {
         glEnd();
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
@@ -175,7 +221,7 @@ public class LWJGLOffscreenSurface implements OffscreenSurface {
     }
     
     Image createTinted(final Color color) {
-        return new Image() {
+        return new GridImage() {
             public Image createTintedVersion(Color newColor) {
                 if(newColor.equals(Color.WHITE)) {
                     return this;
@@ -184,10 +230,13 @@ public class LWJGLOffscreenSurface implements OffscreenSurface {
                 }
             }
             public void draw(AnimationState as, int x, int y) {
-                LWJGLOffscreenSurface.this.draw(as, x, y);
+                LWJGLOffscreenSurface.this.draw(color, x, y, getWidth(), getHeight());
             }
             public void draw(AnimationState as, int x, int y, int width, int height) {
-                LWJGLOffscreenSurface.this.draw(as, x, y, width, height);
+                LWJGLOffscreenSurface.this.draw(color, x, y, width, height);
+            }
+            public void draw(AnimationState as, float[] xy, int numVerticesX, int numVerticesY) {
+                LWJGLOffscreenSurface.this.draw(color, xy, numVerticesX, numVerticesY);
             }
             public int getWidth() {
                 return LWJGLOffscreenSurface.this.getWidth();
