@@ -76,12 +76,11 @@ public class LWJGLOffscreenRenderer implements OffscreenRenderer {
         viewportStartX = x;
         viewportStartY = y;
         viewportHeight = height;
-        hasScissor = false;
         
-        renderer.pushGlobalTintColorReset();
-        renderer.setClipRect(null);
+        renderer.startOffscreenRendering();
         
         glPushAttrib(GL_VIEWPORT_BIT | GL_TRANSFORM_BIT | GL_COLOR_BUFFER_BIT | GL_SCISSOR_BIT);
+        disableClipRect();
         glViewport(0, 0, width, height);
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
@@ -107,7 +106,8 @@ public class LWJGLOffscreenRenderer implements OffscreenRenderer {
         activeSurface.unbindFBO();
         activeSurface = null;
         
-        renderer.popGlobalTintColor();
+        renderer.endOffscreenRendering();
+        
         glMatrixMode(GL_PROJECTION);
         glPopMatrix();
         glMatrixMode(GL_MODELVIEW);
@@ -115,20 +115,20 @@ public class LWJGLOffscreenRenderer implements OffscreenRenderer {
         glPopAttrib();
     }
     
+    void disableClipRect() {
+        glDisable(GL_SCISSOR_TEST);
+        hasScissor = false;
+    }
+    
     void setClipRect(Rect rect) {
-        if(rect == null) {
-            glDisable(GL_SCISSOR_TEST);
-            hasScissor = false;
-        } else {
-            int x0 = Math.max(0, rect.getX() - viewportStartX);
-            int y0 = Math.max(0, rect.getY() - viewportStartY);
-            int x1 = Math.max(0, rect.getRight() - viewportStartX);
-            int y1 = Math.max(0, rect.getBottom() - viewportStartY);
-            GL11.glScissor(x0, viewportHeight - y1, x1-x0, y1-y0);
-            if(!hasScissor) {
-                GL11.glEnable(GL11.GL_SCISSOR_TEST);
-                hasScissor = true;
-            }
+        int x0 = Math.max(0, rect.getX() - viewportStartX);
+        int y0 = Math.max(0, rect.getY() - viewportStartY);
+        int x1 = Math.max(0, rect.getRight() - viewportStartX);
+        int y1 = Math.max(0, rect.getBottom() - viewportStartY);
+        GL11.glScissor(x0, viewportHeight - y1, x1-x0, y1-y0);
+        if(!hasScissor) {
+            GL11.glEnable(GL11.GL_SCISSOR_TEST);
+            hasScissor = true;
         }
     }
 }

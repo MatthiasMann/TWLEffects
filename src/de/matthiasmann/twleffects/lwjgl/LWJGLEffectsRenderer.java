@@ -61,12 +61,30 @@ public class LWJGLEffectsRenderer extends LWJGLRenderer {
     }
 
     @Override
-    public void setClipRect(Rect rect) {
+    protected void setClipRect() {
         if(offscreenRenderer != null && offscreenRenderer.activeSurface != null) {
-            offscreenRenderer.setClipRect(rect);
+            setClipRectOffscreen();
         } else {
-            super.setClipRect(rect);
+            super.setClipRect();
         }
     }
     
+    protected void setClipRectOffscreen() {
+        final Rect rect = clipRectTemp;
+        if(clipStack.getClipRect(rect)) {
+            offscreenRenderer.setClipRect(rect);
+        } else {
+            offscreenRenderer.disableClipRect();
+        }
+    }
+    
+    protected void startOffscreenRendering() {
+        pushGlobalTintColorReset();
+        clipStack.pushDisable();
+    }
+    
+    protected void endOffscreenRendering() {
+        popGlobalTintColor();
+        clipStack.pop();
+    }
 }
