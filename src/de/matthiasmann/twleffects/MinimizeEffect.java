@@ -111,5 +111,9 @@ public class MinimizeEffect implements Widget.RenderOffscreen {
         
         ((GridImage)surface).draw(null, xy, numVerticesX, numVerticesY);
     }
+
+    public int[] getEffectExtraArea(Widget widget) {
+        return null;
+    }
     
 }

@@ -50,5 +50,9 @@ public class SimpleRenderOffscreen implements Widget.RenderOffscreen {
                 widget.getX() - widget.getOffscreenExtraLeft(),
                 widget.getY() - widget.getOffscreenExtraTop());
     }
+
+    public int[] getEffectExtraArea(Widget widget) {
+        return null;
+    }
     
 }
