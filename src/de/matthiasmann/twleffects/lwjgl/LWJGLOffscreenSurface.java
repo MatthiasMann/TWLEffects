@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2011, Matthias Mann
+ * Copyright (c) 2008-2012, Matthias Mann
  *
  * All rights reserved.
  *
@@ -55,9 +55,13 @@ public class LWJGLOffscreenSurface implements OffscreenSurface, GridImage {
     private int usedWidth;
     private int usedHeight;
     private boolean bound;
+    private int glMinFilter;
+    private int glMagFilter;
 
     LWJGLOffscreenSurface(LWJGLEffectsRenderer renderer) {
         this.renderer = renderer;
+        this.glMinFilter = GL_LINEAR;
+        this.glMagFilter = GL_LINEAR;
     }
 
     boolean allocate(int width, int height) {
@@ -74,8 +78,8 @@ public class LWJGLOffscreenSurface implements OffscreenSurface, GridImage {
             glBindTexture(GL_TEXTURE_2D, textureID);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glMinFilter);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glMagFilter);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);  
             glTexImage2D(GL_TEXTURE_2D, 0,
                     GL_RGBA8, textureWidth, textureHeight, 0, GL_RGBA,
@@ -218,6 +222,18 @@ public class LWJGLOffscreenSurface implements OffscreenSurface, GridImage {
 
     public int getHeight() {
         return usedHeight;
+    }
+    
+    public void setGLFilter(int minFilter, int magFilter) {
+        if(glMinFilter != minFilter || glMagFilter != magFilter) {
+            this.glMinFilter = minFilter;
+            this.glMagFilter = magFilter;
+            if(textureID != 0) {
+                glBindTexture(GL_TEXTURE_2D, textureID);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+            }
+        }
     }
     
     Image createTinted(final Color color) {
