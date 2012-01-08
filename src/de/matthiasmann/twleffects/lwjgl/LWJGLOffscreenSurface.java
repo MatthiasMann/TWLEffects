@@ -97,8 +97,14 @@ public class LWJGLOffscreenSurface implements OffscreenSurface, GridImage {
         return true;
     }
     
-    private int nextPowerOf2(int i) {
-        return Integer.highestOneBit(i - 1) << 1;
+    private static int nextPowerOf2(int i) {
+        i--;
+        i |= (i >>  1);
+        i |= (i >>  2);
+        i |= (i >>  4);
+        i |= (i >>  8);
+        i |= (i >> 16);
+        return i+1;
     }
     
     void bindFBO() {
