@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2011, Matthias Mann
+ * Copyright (c) 2008-2012, Matthias Mann
  *
  * All rights reserved.
  *
@@ -103,16 +103,17 @@ public class LWJGLOffscreenRenderer implements OffscreenRenderer {
         if(activeSurface == null) {
             throw new IllegalStateException("no offscreen rendering active");
         }
-        activeSurface.unbindFBO();
-        activeSurface = null;
-        
-        renderer.endOffscreenRendering();
         
         glMatrixMode(GL_PROJECTION);
         glPopMatrix();
         glMatrixMode(GL_MODELVIEW);
         glPopMatrix();
         glPopAttrib();
+        
+        activeSurface.unbindFBO();
+        activeSurface = null;
+        
+        renderer.endOffscreenRendering();
     }
     
     void disableClipRect() {
