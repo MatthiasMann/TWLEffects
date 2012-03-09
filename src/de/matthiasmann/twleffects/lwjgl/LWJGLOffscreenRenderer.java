@@ -30,6 +30,7 @@
 package de.matthiasmann.twleffects.lwjgl;
 
 import de.matthiasmann.twl.Rect;
+import de.matthiasmann.twl.Widget;
 import org.lwjgl.opengl.GL11;
 import de.matthiasmann.twl.renderer.OffscreenRenderer;
 import de.matthiasmann.twl.renderer.OffscreenSurface;
@@ -54,7 +55,7 @@ public class LWJGLOffscreenRenderer implements OffscreenRenderer {
         this.renderer = renderer;
     }
 
-    public OffscreenSurface startOffscreenRendering(OffscreenSurface oldSurface, int x, int y, int width, int height) {
+    public OffscreenSurface startOffscreenRendering(Widget widget, OffscreenSurface oldSurface, int x, int y, int width, int height) {
         if(width <= 0 || height <= 0) {
             throw new IllegalArgumentException("width or height <= 0");
         }
