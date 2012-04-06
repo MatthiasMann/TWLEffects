@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2011, Matthias Mann
+ * Copyright (c) 2008-2012, Matthias Mann
  *
  * All rights reserved.
  *
@@ -53,6 +53,10 @@ public class SimpleRenderOffscreen implements Widget.RenderOffscreen {
 
     public int[] getEffectExtraArea(Widget widget) {
         return null;
+    }
+
+    public boolean needPainting(GUI gui, Widget widget, OffscreenSurface surface) {
+        return true;
     }
     
 }
