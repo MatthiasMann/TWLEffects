@@ -90,7 +90,6 @@ public class LWJGLOffscreenRenderer implements OffscreenRenderer {
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         glLoadIdentity();
-        glDisable(GL_SCISSOR_TEST);
         glBlendFuncSeparate(
                 GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
                 GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
